@@ -223,9 +223,7 @@ export default class DockerDirManager {
 
   protected async passWorking(): Promise<boolean> {
     try {
-      await spawnFile('pass', ['list'], {
-        stdio: [stream.Readable.from(''), 'pipe', console],
-      });
+      await spawnFile('pass', ['list'], { stdio: [stream.Readable.from(''), 'pipe', console] });
 
       return true;
     } catch (err) {
