@@ -46,7 +46,7 @@ function haveCredentialServerHelper(): boolean {
     const contents = JSON.parse(fs.readFileSync(dockerConfigPath).toString());
     const credStoreAttempt = contents.credsStore;
 
-    if (!credStoreAttempt) {
+    if (!credStoreAttempt || credStoreAttempt === 'pass') {
       return false;
     }
     credStore = credStoreAttempt;

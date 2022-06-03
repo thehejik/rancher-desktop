@@ -205,17 +205,31 @@ export default class DockerDirManager {
     }
 
     try {
-      // Provide input in case the helper always reads from stdin regardless of argument (harmless if it doesn't).
-      const body = stream.Readable.from('');
-
       await spawnFile(helperBin, ['list'], {
         env:   { ...process.env, PATH: pathVar },
-        stdio: [body, 'pipe', console],
+        stdio: ['ignore', 'pipe', console],
       });
+      if (helperName === 'pass') {
+        return await this.passWorking();
+      }
 
       return true;
     } catch (err) {
       console.log(`Credential helper "${ helperBin }" is not functional: ${ err }`);
+
+      return false;
+    }
+  }
+
+  protected async passWorking(): Promise<boolean> {
+    try {
+      await spawnFile('pass', ['list'], {
+        stdio: [stream.Readable.from(''), 'pipe', console],
+      });
+
+      return true;
+    } catch (err) {
+      console.log(`Utility pass is not functional: ${ err }`);
 
       return false;
     }
@@ -239,11 +253,13 @@ export default class DockerDirManager {
     } else if (platform === 'darwin') {
       return 'osxkeychain';
     } else if (platform === 'linux') {
-      if (currentCredsStore === 'secretservice') {
-        return 'secretservice';
-      } else {
-        return 'pass';
+      for (const attemptedCredsStore of ['secretservice', 'pass']) {
+        if (attemptedCredsStore !== currentCredsStore && await this.credHelperWorking(attemptedCredsStore)) {
+          return attemptedCredsStore;
+        }
       }
+
+      return 'none';
     } else {
       throw new Error(`platform "${ platform }" is not supported`);
     }
