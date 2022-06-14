@@ -1,9 +1,8 @@
 name: E2E Test
 
 on:
-  workflow_dispatch: {}
-  schedule:
-    - cron: '0 7 * * 1-6'
+  push: {}
+
 env:
   # Force terminal colors. @see https://www.npmjs.com/package/colors
   FORCE_COLOR: 1
